@@ -18,19 +18,24 @@ https://github.com/scpg/i-script.one
 #>
 
 # Display all PowerShell profile paths
-$PROFILE | Get-Member -MemberType NoteProperty | Select-Object Name, Definition
+Write-Host ($PROFILE | Get-Member -MemberType NoteProperty | Select-Object Name, Definition | Out-String)
 
 # Check if each profile exists and display its content if it does
 $PROFILE | Get-Member -MemberType NoteProperty | ForEach-Object {
     $profilePath = $PROFILE.($_.Name)
     Write-Host "`n=== $($_.Name) ===" -ForegroundColor Cyan
-    Write-Host "Path: $profilePath"
+    Write-Host "Path: " -ForegroundColor Cyan -NoNewline
+    Write-Host "$profilePath"
     if (Test-Path $profilePath) {
-        Write-Host "Status: EXISTS" -ForegroundColor Green
-        Write-Host "Content:`n-----------"
+        Write-Host "Status: " -ForegroundColor Cyan -NoNewline
+        write-host "EXISTS" -ForegroundColor Green
+        $maxWidth = (Get-Content $profilePath | Measure-Object -Property Length -Maximum).Maximum
+        $separator = '-' * $maxWidth
+        Write-Host "Content:`n$separator" -ForegroundColor Green
         Get-Content $profilePath
-        Write-Host "-----------"
+        Write-Host "$separator" -ForegroundColor Green
     } else {
-        Write-Host "Status: DOES NOT EXIST" -ForegroundColor Yellow
+        Write-Host "Status: " -ForegroundColor Cyan -NoNewline
+        write-host "DOES NOT EXIST" -ForegroundColor Yellow
     }
 }
