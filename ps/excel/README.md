@@ -11,14 +11,13 @@ Each Excel-related module is organized in its own subdirectory to allow for bett
 ### ConvertFromExcel
 Located in: `.\ConvertFromExcel\`
 
-A PowerShell module for converting Excel files to various formats:
+A PowerShell module for converting Excel files to various formats using only native Microsoft tools:
 - **JSON** conversion with configurable depth and formatting
-- **YAML** conversion (requires powershell-yaml module) 
 - **CSV** conversion with custom delimiters
+- **Enterprise-ready** with zero third-party dependencies
 
 **Functions:**
 - `ConvertFrom-ExcelToJson`
-- `ConvertFrom-ExcelToYaml`
 - `ConvertFrom-ExcelToCsv`
 
 **Quick Start:**
@@ -26,9 +25,10 @@ A PowerShell module for converting Excel files to various formats:
 # Navigate to the module directory
 cd .\ConvertFromExcel\
 
-# Install dependencies
-Install-Module ImportExcel -Scope CurrentUser
-Install-Module powershell-yaml -Scope CurrentUser
+# Verify Excel is installed (required for COM objects)
+if (-not (Test-Path "HKLM:\Software\Microsoft\Office")) {
+    Write-Warning "Microsoft Excel may not be installed"
+}
 
 # Import the module
 Import-Module .\ConvertFromExcel.psd1
@@ -42,6 +42,13 @@ Import-Module .\ConvertFromExcel.psd1
 - `CLAUDE.md` - Development guidelines and module specifications
 - `TESTING.md` - Comprehensive testing guide
 - `DEVELOPMENT.md` - Best practices for development workflow
+
+## Enterprise Benefits
+
+- **Zero third-party dependencies** - Uses only native Microsoft technologies
+- **Corporate security compliance** - No external modules to audit
+- **Easy deployment** - Works in restricted environments
+- **Excel COM integration** - Full native Excel feature support
 
 ## Future Modules
 

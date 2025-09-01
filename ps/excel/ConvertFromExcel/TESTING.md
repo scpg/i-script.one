@@ -2,18 +2,32 @@
 
 ## Prerequisites
 
-### Required Modules
-Before testing, install these PowerShell modules:
+### System Requirements
+Before testing, ensure you have:
 
+**Required Software:**
+- **Microsoft Excel** - Must be installed for COM object access
+- **Windows PowerShell 5.1+** - Desktop edition required for COM objects
+- **No third-party modules** - Uses only native Microsoft tools
+
+**Verification:**
 ```powershell
-# Required for Excel file operations
-Install-Module ImportExcel -Scope CurrentUser
+# Check if Excel is installed and accessible
+if (Test-Path "HKLM:\Software\Microsoft\Office") {
+    Write-Host "Excel installation detected" -ForegroundColor Green
+} else {
+    Write-Warning "Excel may not be installed"
+}
 
-# Required for YAML conversion
-Install-Module powershell-yaml -Scope CurrentUser
-
-# Alternative YAML module
-# Install-Module PSYaml -Scope CurrentUser
+# Test Excel COM object creation
+try {
+    $excel = New-Object -ComObject Excel.Application
+    $excel.Quit()
+    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null
+    Write-Host "Excel COM object accessible" -ForegroundColor Green
+} catch {
+    Write-Error "Excel COM object not accessible: $($_.Exception.Message)"
+}
 ```
 
 ## Development Workflow
@@ -52,16 +66,16 @@ Import-Module .\ConvertFromExcel.psd1 -Force
 Import-Module .\ConvertFromExcel.psd1 -Force
 
 # 2. Test JSON conversion
-ConvertFrom-ExcelToJson -Path ".\test-data.xlsx" -HasHeaders
+ConvertFrom-ExcelToJson -Path ".\test-data\simple.xlsx" -HasHeaders
 
-# 3. Test YAML conversion
-ConvertFrom-ExcelToYaml -Path ".\test-data.xlsx" -HasHeaders
-
-# 4. Test CSV conversion
+# 3. Test CSV conversion
 ConvertFrom-ExcelToCsv -Path ".\test-data.xlsx" -HasHeaders
 
-# 5. Test file output
-ConvertFrom-ExcelToJson -Path ".\test-data.xlsx" -OutputPath ".\output.json" -HasHeaders
+# 4. Test file output
+ConvertFrom-ExcelToJson -Path ".\test-data\simple.xlsx" -OutputPath ".\test-output\output.json" -HasHeaders
+
+# 5. Test compressed JSON
+ConvertFrom-ExcelToJson -Path ".\test-data\simple.xlsx" -HasHeaders -Compress
 ```
 
 ### Error Testing
@@ -119,13 +133,16 @@ Test-ExcelPath ".\test-data.xlsx"
 **Problem:** Changes to module code don't take effect
 **Solution:** Always use `Import-Module -Force` or the reload script
 
-### Issue: ImportExcel Module Missing
-**Problem:** "ImportExcel module is required" error
-**Solution:** `Install-Module ImportExcel -Scope CurrentUser`
+### Issue: Excel Not Installed
+**Problem:** "Microsoft Excel is not installed or accessible" error
+**Solution:** Install Microsoft Excel on the system
 
-### Issue: YAML Module Missing
-**Problem:** YAML conversion fails
-**Solution:** `Install-Module powershell-yaml -Scope CurrentUser`
+### Issue: COM Object Access Denied
+**Problem:** Excel COM object creation fails
+**Solution:** 
+- Run PowerShell as Administrator
+- Ensure Excel is properly licensed
+- Check Windows security settings for COM objects
 
 ### Issue: File Path Errors
 **Problem:** File not found errors

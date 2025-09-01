@@ -9,7 +9,7 @@ with various scenarios including success cases, error cases, and edge cases.
 .NOTES
 Author: scpg
 Date: 2025-09-01
-Requires: ConvertFromExcel module, ImportExcel module, powershell-yaml module
+Requires: ConvertFromExcel module, Microsoft Excel installed
 #>
 
 param(
@@ -94,29 +94,36 @@ if (-not (Test-Path $TestOutputPath)) {
 
 # Create test data if requested or if it doesn't exist
 if ($CreateTestData -or -not (Test-Path $TestDataPath)) {
-    Write-TestResult "Setup" "INFO" "Creating test data..."
-    & (Join-Path $PSScriptRoot "Create-TestData.ps1")
+    Write-TestResult "Setup" "INFO" "Creating test data using Excel COM objects..."
+    try {
+        & (Join-Path $PSScriptRoot "Create-TestData.ps1")
+        Write-TestResult "Test Data Creation" "PASS" "Excel files created successfully"
+    } catch {
+        Write-TestResult "Test Data Creation" "FAIL" "Error creating test data: $($_.Exception.Message)"
+        exit 1
+    }
 }
 
 # Check prerequisites
 Write-Host "`n=== Prerequisites Check ===" -ForegroundColor Yellow
 
-if (Get-Module -ListAvailable -Name ImportExcel) {
-    Write-TestResult "ImportExcel Module" "PASS" "Module available"
-} else {
-    Write-TestResult "ImportExcel Module" "FAIL" "Module not installed - run: Install-Module ImportExcel"
+# Test Excel installation
+try {
+    $excel = New-Object -ComObject Excel.Application -ErrorAction Stop
+    $excel.Quit()
+    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null
+    Write-TestResult "Microsoft Excel" "PASS" "Excel COM object accessible"
+} catch {
+    Write-TestResult "Microsoft Excel" "FAIL" "Excel not installed or accessible: $($_.Exception.Message)"
     exit 1
 }
 
-if (Get-Module -ListAvailable -Name powershell-yaml) {
-    Write-TestResult "PowerShell-Yaml Module" "PASS" "Module available"
-    $yamlAvailable = $true
-} elseif (Get-Module -ListAvailable -Name PSYaml) {
-    Write-TestResult "PSYaml Module" "PASS" "Module available"
-    $yamlAvailable = $true
+# Check Windows PowerShell version
+if ($PSVersionTable.PSEdition -eq "Desktop") {
+    Write-TestResult "PowerShell Edition" "PASS" "Desktop edition (COM objects supported)"
 } else {
-    Write-TestResult "YAML Module" "SKIP" "No YAML module installed - YAML tests will be skipped"
-    $yamlAvailable = $false
+    Write-TestResult "PowerShell Edition" "FAIL" "Core edition detected - Desktop edition required for COM objects"
+    exit 1
 }
 
 # Import the module
@@ -201,33 +208,26 @@ foreach ($file in $testFiles.Keys) {
     }
 }
 
-if ($yamlAvailable) {
-    Write-Host "`n=== YAML Conversion Tests ===" -ForegroundColor Yellow
-    
-    foreach ($file in $testFiles.Keys) {
-        $filePath = Join-Path $TestDataPath $file
-        
-        if (Test-Path $filePath) {
-            # Test YAML conversion
-            $outputFile = Join-Path $TestOutputPath "$([System.IO.Path]::GetFileNameWithoutExtension($file)).yaml"
-            Test-Function "YAML File: $file" {
-                $result = ConvertFrom-ExcelToYaml -Path $filePath -OutputPath $outputFile -HasHeaders
-                if (Test-Path $outputFile) {
-                    $content = Get-Content $outputFile -Raw
-                    return "File created ($(($content -split "`n").Count) lines)"
-                } else {
-                    throw "Output file not created"
-                }
-            }
+Write-Host "`n=== Advanced JSON Tests ===" -ForegroundColor Yellow
+
+# Test compressed JSON
+$simpleFile = Join-Path $TestDataPath "simple.xlsx"
+if (Test-Path $simpleFile) {
+    Test-Function "Compressed JSON" {
+        $result = ConvertFrom-ExcelToJson -Path $simpleFile -HasHeaders -Compress
+        if ($result -and $result.Length -gt 0 -and -not ($result -match "`n")) {
+            return "Compressed JSON generated ($(($result.Length)) characters, no newlines)"
         } else {
-            Write-TestResult "YAML Test: $file" "SKIP" "Test file not found"
-            $script:TestsSkipped++
+            throw "Compressed JSON format invalid"
         }
     }
-} else {
-    Write-Host "`n=== YAML Conversion Tests ===" -ForegroundColor Yellow
-    Write-TestResult "YAML Tests" "SKIP" "YAML module not available"
-    $script:TestsSkipped += 4
+    
+    # Test different JSON depths
+    Test-Function "JSON Depth Control" {
+        $result = ConvertFrom-ExcelToJson -Path $simpleFile -HasHeaders -Depth 2
+        $parsed = $result | ConvertFrom-Json
+        return "JSON with depth 2 contains $($parsed.Count) items"
+    }
 }
 
 Write-Host "`n=== Error Handling Tests ===" -ForegroundColor Yellow
