@@ -1,0 +1,161 @@
+# PowerShell and Windows specific ignores
+
+# PowerShell execution policy and profiles
+*.ps1xml
+Microsoft.PowerShell_profile.ps1
+Microsoft.PowerShellISE_profile.ps1
+
+# PowerShell transcripts
+PowerShell_transcript.*
+
+# Temporary PowerShell files
+*.tmp
+*.temp
+*~
+
+# PowerShell cache files
+*.cache
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.sln.iml
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Dependency directories
+node_modules/
+packages/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Microsoft Azure Build Output
+csx/
+*.build.csdef
+
+# Microsoft Azure Emulator
+ecf/
+rcf/
+
+# Local configuration files
+*.local.json
+appsettings.local.json
+local.settings.json
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.test
+
+# Excel test files (optional - uncomment if you don't want to track test Excel files)
+# *.xlsx
+# *.xls
+# *.xlsm
+# *.xlsb
+
+# Output files from conversions (optional - uncomment if you don't want to track output files)
+# *.json
+# *.yaml
+# *.yml
+# *.csv
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Temporary folders
+tmp/
+temp/
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Secrets and keys
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+credentials.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# PowerShell specific module artifacts
+PSGetModuleInfo.xml
