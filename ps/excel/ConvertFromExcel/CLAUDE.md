@@ -1,7 +1,7 @@
 # ConvertFromExcel Module - Development Guidelines
 
 ## Module Overview
-ConvertFromExcel is a PowerShell module for converting Excel files to JSON, YAML, and CSV formats. It follows PowerShell naming conventions and provides comprehensive error handling.
+ConvertFromExcel is a PowerShell module for converting Excel files to JSON and CSV formats using only native Microsoft tools. Perfect for enterprise environments with strict security requirements. No third-party dependencies required.
 
 ## Module Structure
 - **ConvertFromExcel.psd1** - Module manifest with metadata and exported functions
@@ -10,12 +10,12 @@ ConvertFromExcel is a PowerShell module for converting Excel files to JSON, YAML
 
 ## Functions
 1. `ConvertFrom-ExcelToJson` - Convert Excel to JSON format
-2. `ConvertFrom-ExcelToYaml` - Convert Excel to YAML format  
-3. `ConvertFrom-ExcelToCsv` - Convert Excel to CSV format
+2. `ConvertFrom-ExcelToCsv` - Convert Excel to CSV format
 
 ## Dependencies
-- **ImportExcel** - Required for reading Excel files (`Install-Module ImportExcel`)
-- **powershell-yaml** or **PSYaml** - Required for YAML conversion (`Install-Module powershell-yaml`)
+- **Microsoft Excel** - Required for COM object access (Excel must be installed)
+- **Windows PowerShell 5.1+** - Desktop edition required for COM objects
+- **No third-party modules** - Uses only native Microsoft technologies
 
 ## Development Standards
 
@@ -63,10 +63,11 @@ ConvertFromExcel is a PowerShell module for converting Excel files to JSON, YAML
 - Allows for pipeline integration and direct file export
 - Consistent return messages for file operations
 
-### Module Dependencies
-- Graceful handling when required modules are missing
-- Clear installation instructions in error messages
-- Support for multiple YAML modules (powershell-yaml or PSYaml)
+### Enterprise-Ready Design
+- No external dependencies or third-party modules
+- Uses native Microsoft Excel COM objects
+- Comprehensive Excel installation detection
+- Proper COM object cleanup and memory management
 
 ## Usage Examples
 ```powershell
@@ -76,16 +77,24 @@ Import-Module .\ConvertFromExcel.psd1
 # Convert to JSON file
 ConvertFrom-ExcelToJson -Path "data.xlsx" -OutputPath "output.json" -HasHeaders
 
-# Convert to YAML string
-$yamlData = ConvertFrom-ExcelToYaml -Path "config.xlsx" -WorksheetName "Settings" -HasHeaders
+# Convert to compressed JSON string
+$jsonData = ConvertFrom-ExcelToJson -Path "config.xlsx" -WorksheetName "Settings" -HasHeaders -Compress
 
 # Convert to CSV with semicolon delimiter
 ConvertFrom-ExcelToCsv -Path "report.xlsx" -OutputPath "export.csv" -Delimiter ";" -HasHeaders
 ```
 
+## Enterprise Features
+- Excel installation detection and validation
+- Comprehensive COM object cleanup
+- Proper memory management for large files
+- Support for all Excel formats (.xlsx, .xls, .xlsm, .xlsb)
+- Detailed error handling and logging
+- Date/time value conversion from Excel format
+
 ## Future Enhancements
 - Support for multiple worksheets in single operation
 - Batch conversion of multiple Excel files
 - Custom data transformation options
-- Integration with cloud storage services
 - Support for additional output formats (XML, TSV)
+- Excel formula evaluation options

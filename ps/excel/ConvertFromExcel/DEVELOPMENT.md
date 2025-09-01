@@ -7,9 +7,10 @@
 # Navigate to the ConvertFromExcel directory
 cd C:\dev\i-script.one\ps\excel\ConvertFromExcel
 
-# Install required modules
-Install-Module ImportExcel -Scope CurrentUser
-Install-Module powershell-yaml -Scope CurrentUser
+# Verify Excel is installed
+if (-not (Test-Path "HKLM:\Software\Microsoft\Office")) {
+    Write-Warning "Microsoft Excel may not be installed"
+}
 
 # Create test data
 .\Create-TestData.ps1

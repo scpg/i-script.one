@@ -5,8 +5,8 @@
     # Version number of this module.
     ModuleVersion = '1.0.0'
     
-    # Supported PSEditions
-    CompatiblePSEditions = @('Desktop', 'Core')
+    # Supported PSEditions (Desktop required for Excel COM)
+    CompatiblePSEditions = @('Desktop')
     
     # ID used to uniquely identify this module
     GUID = '12345678-1234-1234-1234-123456789012'
@@ -21,7 +21,7 @@
     Copyright = '(c) 2025 scpg. All rights reserved.'
     
     # Description of the functionality provided by this module
-    Description = 'PowerShell module for converting Excel files to JSON, YAML, and CSV formats'
+    Description = 'PowerShell module for converting Excel files to JSON and CSV formats using native Microsoft tools'
     
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -29,7 +29,6 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
         'ConvertFrom-ExcelToJson',
-        'ConvertFrom-ExcelToYaml',
         'ConvertFrom-ExcelToCsv'
     )
     
@@ -52,7 +51,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('Excel', 'Converter', 'JSON', 'YAML', 'CSV', 'Data')
+            Tags = @('Excel', 'Converter', 'JSON', 'CSV', 'Data', 'Enterprise', 'Native')
             
             # A URL to the license for this module.
             LicenseUri = 'https://opensource.org/licenses/MIT'
@@ -61,7 +60,7 @@
             ProjectUri = 'https://github.com/scpg/i-script.one'
             
             # ReleaseNotes of this module
-            ReleaseNotes = 'Initial release of ConvertFromExcel module for converting Excel files to JSON, YAML, and CSV formats'
+            ReleaseNotes = 'Enterprise-ready module using native Microsoft tools for converting Excel files to JSON and CSV formats'
         }
     }
 }
