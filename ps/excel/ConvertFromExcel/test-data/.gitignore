@@ -1,0 +1,5 @@
+# Excel test files in directory test-data/
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb

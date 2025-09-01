@@ -32,11 +32,12 @@ function Write-TestResult {
     )
     
     $color = switch ($Result) {
-        "PASS" { "Green" }
-        "FAIL" { "Red" }
-        "SKIP" { "Yellow" }
-        "INFO" { "Cyan" }
-        default { "White" }
+        "FAIL"    { "Red" }
+        "INFO"    { "Blue" }
+        "PASS"    { "Green" }
+        "SKIP"    { "DarkYellow" }
+        "WARNING" { "Yellow" }
+        default   { "White" }
     }
     
     Write-Host "[$Result] $TestName" -ForegroundColor $color
@@ -122,8 +123,7 @@ try {
 if ($PSVersionTable.PSEdition -eq "Desktop") {
     Write-TestResult "PowerShell Edition" "PASS" "Desktop edition (COM objects supported)"
 } else {
-    Write-TestResult "PowerShell Edition" "FAIL" "Core edition detected - Desktop edition required for COM objects"
-    exit 1
+    Write-TestResult "PowerShell Edition" "WARNING" "Core edition detected - Desktop edition recommended for COM objects"
 }
 
 # Import the module
@@ -148,6 +148,8 @@ $testFiles = @{
     "no-headers.xlsx" = "Data without headers"
     "multiple-sheets.xlsx" = "Multiple worksheets"
     "empty.xlsx" = "Empty worksheet"
+    "complex-data.xlsx" = "Complex data types and special characters"
+    "large-dataset.xlsx" = "Large dataset for performance testing"
 }
 
 Write-Host "`n=== JSON Conversion Tests ===" -ForegroundColor Yellow

@@ -105,17 +105,12 @@ local.settings.json
 .env.production
 .env.test
 
-# Excel test files (optional - uncomment if you don't want to track test Excel files)
-# *.xlsx
-# *.xls
-# *.xlsm
-# *.xlsb
 
-# Output files from conversions (optional - uncomment if you don't want to track output files)
+# Output files from conversions in directory test-output
 # *.json
 # *.yaml
 # *.yml
-# *.csv
+*.csv
 
 # Backup files
 *.bak

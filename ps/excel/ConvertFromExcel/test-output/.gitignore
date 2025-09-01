@@ -1,0 +1,6 @@
+# Excel test files in directory test-data/
+*.csv
+*.json
+*.yaml
+*.yml
+*.txt

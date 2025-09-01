@@ -132,14 +132,18 @@ function Get-ExcelWorksheetData {
     $workbook = $null
     
     try {
+        # Convert relative path to absolute path (Excel COM requires absolute paths)
+        $absolutePath = (Resolve-Path $Path).Path
+        Write-ConversionLog "Resolved path: $absolutePath"
+        
         Write-ConversionLog "Creating Excel COM object"
         $excel = New-Object -ComObject Excel.Application
         $excel.Visible = $false
         $excel.DisplayAlerts = $false
         $excel.ScreenUpdating = $false
         
-        Write-ConversionLog "Opening workbook: $Path"
-        $workbook = $excel.Workbooks.Open($Path)
+        Write-ConversionLog "Opening workbook: $absolutePath"
+        $workbook = $excel.Workbooks.Open($absolutePath)
         
         # Select worksheet
         if ($WorksheetName) {
@@ -155,7 +159,6 @@ function Get-ExcelWorksheetData {
             $worksheet = $workbook.Worksheets.Item(1)
             Write-ConversionLog "Using first worksheet: $($worksheet.Name)"
         }
-        
         # Get used range
         $usedRange = $worksheet.UsedRange
         if ($null -eq $usedRange) {
