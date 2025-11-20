@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker:*)",
+      "Bash(claude-code config show)",
+      "Bash(claude mcp:*)",
+      "Bash(claude config show)",
+      "Bash(claude config --help)",
+      "Bash(claude config list)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  }
+}
