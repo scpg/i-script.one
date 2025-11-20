@@ -1,39 +1,42 @@
-# PowerShell and Windows specific ignores
+# .gitignore for i-script.one
+# Optimized for PowerShell/Windows development with Excel data conversion
+# Generated: 2025-11-20
+
+#######################################
+# POWERSHELL & WINDOWS SPECIFIC
+#######################################
 
 # PowerShell execution policy and profiles
 *.ps1xml
 Microsoft.PowerShell_profile.ps1
 Microsoft.PowerShellISE_profile.ps1
 
-# PowerShell transcripts
+# PowerShell transcripts and temporary files
 PowerShell_transcript.*
-
-# Temporary PowerShell files
 *.tmp
 *.temp
 *~
 
-# PowerShell cache files
+# PowerShell cache and module artifacts
 *.cache
+PSGetModuleInfo.xml
 
-# Windows image file caches
+# Windows system files
 Thumbs.db
 ehthumbs.db
-
-# Folder config file
 Desktop.ini
-
-# Recycle Bin used on file shares
 $RECYCLE.BIN/
+*.lnk
 
-# Windows Installer files
+# Windows installer files
 *.cab
 *.msi
 *.msm
 *.msp
 
-# Windows shortcuts
-*.lnk
+#######################################
+# DEVELOPMENT TOOLS
+#######################################
 
 # Visual Studio Code
 .vscode/
@@ -43,24 +46,13 @@ $RECYCLE.BIN/
 .idea/
 *.sln.iml
 
-# Logs
-logs/
-*.log
-*.log.*
+# Claude Code settings (user-specific)
+.claude/settings.local.json
+.claude/user-*
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# Test results
-TestResults/
-*.trx
-*.coverage
+#######################################
+# BUILD & TEST OUTPUTS
+#######################################
 
 # Build results
 [Dd]ebug/
@@ -74,30 +66,57 @@ bld/
 [Bb]in/
 [Oo]bj/
 
-# Dependency directories
+# Test results (but NOT test data)
+TestResults/
+*.trx
+*.coverage
+coverage/
+
+# Generated test outputs (dynamically created)
+ps/excel/ConvertFromExcel/test-output/*.csv
+ps/excel/ConvertFromExcel/test-output/*.json
+ps/excel/ConvertFromExcel/test-output/*.txt
+ps/excel/ConvertFromExcel/test-output/*.yaml
+ps/excel/ConvertFromExcel/test-output/*.yml
+
+# BUT keep test output .gitignore file itself
+!ps/excel/ConvertFromExcel/test-output/.gitignore
+
+#######################################
+# DEPENDENCIES & PACKAGES
+#######################################
+
+# Node.js (if used for tooling)
 node_modules/
-packages/
+*.lock
 
 # NuGet packages
 *.nupkg
 *.snupkg
 .nuget/
+packages/
 project.lock.json
 project.fragment.lock.json
 artifacts/
 
-# Microsoft Azure Build Output
-csx/
-*.build.csdef
+#######################################
+# LOGS & RUNTIME DATA
+#######################################
 
-# Microsoft Azure Emulator
-ecf/
-rcf/
+# Logs
+logs/
+*.log
+*.log.*
 
-# Local configuration files
-*.local.json
-appsettings.local.json
-local.settings.json
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+#######################################
+# CONFIGURATION & SECRETS
+#######################################
 
 # Environment variables
 .env
@@ -105,39 +124,10 @@ local.settings.json
 .env.production
 .env.test
 
-
-# Output files from conversions in directory test-output
-# *.json
-# *.yaml
-# *.yml
-*.csv
-
-# Backup files
-*.bak
-*.backup
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Icon?
-
-# Temporary folders
-tmp/
-temp/
-
-# Archives
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
+# Local configuration
+*.local.json
+appsettings.local.json
+local.settings.json
 
 # Secrets and keys
 *.key
@@ -147,10 +137,109 @@ temp/
 secrets.json
 credentials.json
 
+#######################################
+# CLOUD & AZURE
+#######################################
+
+# Microsoft Azure
+csx/
+*.build.csdef
+ecf/
+rcf/
+
+#######################################
+# DATABASES & TEMPORARY FILES
+#######################################
+
 # Database files
 *.db
 *.sqlite
 *.sqlite3
 
-# PowerShell specific module artifacts
-PSGetModuleInfo.xml
+# Backup files
+*.bak
+*.backup
+
+# Temporary folders
+tmp/
+temp/
+
+#######################################
+# ARCHIVES & BINARIES
+#######################################
+
+# Archives (except test data)
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# BUT allow specific test archives if needed
+# !test-data/**/*.zip
+
+#######################################
+# OS SPECIFIC
+#######################################
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+#######################################
+# PROJECT SPECIFIC EXCEPTIONS
+#######################################
+
+# IMPORTANT: Keep all test data for validation
+# Test Excel files are essential for module testing
+!ps/excel/ConvertFromExcel/test-data/
+!ps/excel/ConvertFromExcel/test-data/*.xlsx
+!ps/excel/ConvertFromExcel/test-data/*.xls
+!ps/excel/ConvertFromExcel/test-data/*.xlsm
+!ps/excel/ConvertFromExcel/test-data/*.xlsb
+
+# Keep expected test output samples (for validation)
+!ps/excel/ConvertFromExcel/test-output/expected/
+!ps/excel/ConvertFromExcel/test-output/expected/*.json
+!ps/excel/ConvertFromExcel/test-output/expected/*.csv
+
+# Keep AI instruction files (should be tracked)
+!AI_INSTRUCTIONS.md
+!PROJECT_SUMMARY.md
+!.github/AI_CONTEXT.md
+!.github/COPILOT_INSTRUCTIONS.md
+
+# Keep backlog management files
+!ps/excel/ConvertFromExcel/backlog/
+!ps/excel/ConvertFromExcel/backlog/**/*.md
+!ps/excel/ConvertFromExcel/backlog/**/*.yml
+
+#######################################
+# GLOBAL CSV/JSON POLICY
+#######################################
+
+# By default, ignore CSV files (often generated outputs)
+*.csv
+
+# BUT allow CSV files in specific locations:
+!test-data/**/*.csv
+!documentation/**/*.csv
+!examples/**/*.csv
+!ps/excel/ConvertFromExcel/test-output/expected/*.csv
+
+# Allow JSON configuration files but ignore generated JSON
+*.json
+!package.json
+!tsconfig.json
+!.vscode/*.json
+!.claude/*.json
+!**/config.json
+!**/settings.json
+!**/*config*.json
