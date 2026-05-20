@@ -29,33 +29,23 @@ param(
     [switch]$Quiet
 )
 
+if (-not (Get-Module -Name Microsoft.WinGet.Client -ListAvailable -ErrorAction SilentlyContinue)) {
+    Write-Error "Microsoft.WinGet.Client module not found. Install with: Install-Module Microsoft.WinGet.Client -Scope CurrentUser"
+    exit 1
+}
+Import-Module Microsoft.WinGet.Client
+
 # Matched against the Package ID column
-$depPattern     = 'VCRedist|DotNet|DirectX|XNA|EdgeWebView|OpenAL|PhysX|Redistributable'
+$depPattern      = 'VCRedist|DotNet|DirectX|XNA|EdgeWebView|OpenAL|PhysX|Redistributable'
 $excludeFromApps = 'Microsoft\.UI|WindowsAppRuntime'
 
-# ── Parse winget output ────────────────────────────────────────────────────────
+# ── Query installed packages ───────────────────────────────────────────────────
 
 Write-Verbose "Querying all installed winget packages..."
 
-$allPackages = winget list --source winget --disable-interactivity |
-    ForEach-Object {
-        # Requires 2+ spaces between Name and Id to avoid matching preamble lines
-        # (which only have single spaces). Blank lines, headers, separators and
-        # the footer naturally fall through.
-        if ($_ -match '^\s*(.+?)\s{2,}(\S+)\s+(\S+)') {
-            $id = $matches[2]
-            if ($id -ne 'Id' -and $id -notmatch '^-+$') {
-                [PSCustomObject]@{
-                    Name    = $matches[1].Trim()
-                    Id      = $id
-                    Version = $matches[3]
-                }
-            }
-        }
-    } |
-    Where-Object { $_ }
+$allPackages = @(Get-WinGetPackage -Source winget)
 
-Write-Verbose "Total installed packages: $(@($allPackages).Count)"
+Write-Verbose "Total installed packages: $($allPackages.Count)"
 
 # ── Classify ───────────────────────────────────────────────────────────────────
 
@@ -83,7 +73,7 @@ function Write-Section ([string]$Title) {
 Write-Section "RUNTIME DEPENDENCIES FOUND ($($dependencies.Count))"
 
 if ($dependencies.Count -gt 0) {
-    $dependencies | Format-Table Name, Id, Version -AutoSize
+    $dependencies | Format-Table Name, Id, InstalledVersion -AutoSize
 } else {
     Write-Host "  No runtime dependencies found$(if ($Pattern) { " matching '$Pattern'" })." -ForegroundColor Gray
 }
@@ -118,7 +108,7 @@ if (-not $Quiet) {
     Write-Section "INSTALLED APPLICATIONS  ($($applications.Count) total — for cross-reference)"
     Write-Host "  Verify none of these depend on a redistributable before uninstalling it." -ForegroundColor Gray
     Write-Host ""
-    $applications | Format-Table Name, Id, Version -AutoSize
+    $applications | Format-Table Name, Id, InstalledVersion -AutoSize
 }
 
 # ── Section 4: Suggested uninstall commands ────────────────────────────────────
@@ -131,7 +121,7 @@ Write-Host ""
 
 if ($dependencies.Count -gt 0) {
     $dependencies | ForEach-Object {
-        Write-Host "  winget uninstall --id $($_.Id) --verbose" -ForegroundColor DarkYellow
+        Write-Host "  Uninstall-WinGetPackage -Id '$($_.Id)' -Mode Silent" -ForegroundColor DarkYellow
     }
 } else {
     Write-Host "  Nothing to uninstall$(if ($Pattern) { " matching '$Pattern'" })." -ForegroundColor Gray

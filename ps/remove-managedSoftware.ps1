@@ -2,115 +2,158 @@
 .SYNOPSIS
     Removes winget managed software matching a name or ID pattern.
 .DESCRIPTION
-    Queries all installed winget packages, filters by the given pattern,
-    shows what will be removed, then uninstalls each matching package.
+    Uses the Microsoft.WinGet.Client module to uninstall packages. Can be run
+    standalone (queries all installed packages and filters) or receive piped
+    output from list-managedSoftware.ps1.
     Supports -WhatIf to preview and -Force to skip confirmation prompts.
+.PARAMETER InputObject
+    Package objects piped from list-managedSoftware.ps1.
 .PARAMETER Pattern
-    Required. Filter packages to remove by name or ID (case-insensitive).
-    Be as specific as possible to avoid unintended removals.
+    Required in standalone mode. Filter packages to remove by name or ID
+    (case-insensitive). Be as specific as possible to avoid unintended removals.
+    Also applies as a safety filter when receiving pipeline input.
 .PARAMETER Force
     Skip per-package confirmation prompts. Use with caution.
 .PARAMETER Quiet
     Suppress the package summary and progress messages.
+.PARAMETER NoElevate
+    Do not attempt to auto-elevate. Exit with an error if not already running
+    as Administrator. Use this in pipelines or automation where UAC prompts
+    are not acceptable.
 .EXAMPLE
     .\remove-managedSoftware.ps1 -Pattern "7zip"
 .EXAMPLE
     .\remove-managedSoftware.ps1 -Pattern "7zip.7zip" -WhatIf
 .EXAMPLE
     .\remove-managedSoftware.ps1 -Pattern "VCRedist" -Force
+.EXAMPLE
+    .\list-managedSoftware.ps1 -p vcredist | .\remove-managedSoftware.ps1 -Force
 #>
 #Requires -Version 5.1
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
-    [Parameter(Mandatory, Position = 0)]
-    [ValidateNotNullOrEmpty()]
+    [Parameter(ValueFromPipeline)]
+    [object]$InputObject,
+
     [Alias('p')]
     [string]$Pattern,
 
     [switch]$Force,
 
     [Alias('q')]
-    [switch]$Quiet
+    [switch]$Quiet,
+
+    [switch]$NoElevate
 )
 
-# -Force skips per-package confirmation prompts (WhatIf still works normally)
-if ($Force) { $ConfirmPreference = 'None' }
+begin {
+    if (-not (Get-Module -Name Microsoft.WinGet.Client -ListAvailable -ErrorAction SilentlyContinue)) {
+        Write-Error "Microsoft.WinGet.Client module not found. Install with: Install-Module Microsoft.WinGet.Client -Scope CurrentUser"
+        exit 1
+    }
+    Import-Module Microsoft.WinGet.Client
 
-# ── Query installed packages ───────────────────────────────────────────────────
-
-Write-Verbose "Querying installed winget packages..."
-
-$allPackages = winget list --source winget --disable-interactivity |
-    ForEach-Object {
-        if ($_ -match '^\s*(.+?)\s{2,}(\S+)\s+(\S+)') {
-            $id = $matches[2]
-            if ($id -ne 'Id' -and $id -notmatch '^-+$') {
-                [PSCustomObject]@{
-                    Name    = $matches[1].Trim()
-                    Id      = $id
-                    Version = $matches[3]
-                }
-            }
-        }
-    } |
-    Where-Object { $_ }
-
-Write-Verbose "Total installed packages: $(@($allPackages).Count)"
-
-# ── Filter by pattern ──────────────────────────────────────────────────────────
-
-$safePattern  = [regex]::Escape($Pattern)
-$toRemove     = @($allPackages | Where-Object {
-    $_.Name -imatch $safePattern -or $_.Id -imatch $safePattern
-})
-
-if ($toRemove.Count -eq 0) {
-    Write-Warning "No installed packages found matching '$Pattern'."
-    exit 0
+    $pipelineMode     = $false
+    $pipelinePackages = [System.Collections.Generic.List[object]]::new()
 }
 
-# ── Show what will be removed ──────────────────────────────────────────────────
-
-if (-not $Quiet) {
-    Write-Host ""
-    Write-Host "Packages matching '$Pattern' ($($toRemove.Count)):" -ForegroundColor Cyan
-    Write-Host ("=" * 55) -ForegroundColor Cyan
-    $toRemove | Format-Table Name, Id, Version -AutoSize
-    Write-Host "!! These packages will be UNINSTALLED !!" -ForegroundColor Red
-    Write-Host ""
-}
-
-# ── Remove each package ────────────────────────────────────────────────────────
-
-$removed  = 0
-$failed   = 0
-
-foreach ($pkg in $toRemove) {
-    if ($PSCmdlet.ShouldProcess("$($pkg.Id)  ($($pkg.Name))", "winget uninstall")) {
-        if (-not $Quiet) { Write-Host "[INFO] Removing: $($pkg.Id)  ($($pkg.Name))" }
-        Write-Verbose "Running: winget uninstall --id $($pkg.Id)"
-
-        if ($VerbosePreference -eq 'Continue') {
-            winget uninstall --id $pkg.Id --disable-interactivity --verbose
-        } else {
-            winget uninstall --id $pkg.Id --disable-interactivity
-        }
-
-        if ($LASTEXITCODE -eq 0) {
-            $removed++
-        } else {
-            Write-Warning "winget reported a non-zero exit code for '$($pkg.Id)' (exit: $LASTEXITCODE)."
-            $failed++
-        }
+process {
+    if ($InputObject) {
+        $pipelineMode = $true
+        $pipelinePackages.Add($InputObject)
     }
 }
 
-# ── Summary ────────────────────────────────────────────────────────────────────
+end {
+    # ── Validate: Pattern required in standalone mode ──────────────────────────
+    if (-not $pipelineMode -and -not $Pattern) {
+        Write-Error "The -Pattern parameter is required in standalone mode. Specify a name or ID to match packages for removal."
+        exit 1
+    }
 
-if (-not $Quiet -and -not $WhatIfPreference) {
-    Write-Host ""
-    if ($removed -gt 0) { Write-Host "Removed : $removed package(s)." -ForegroundColor Green }
-    if ($failed  -gt 0) { Write-Host "Failed  : $failed package(s)." -ForegroundColor Red }
+    # -Force skips per-package confirmation prompts (WhatIf still works normally)
+    if ($Force) { $ConfirmPreference = 'None' }
+
+    # ── Elevation check ────────────────────────────────────────────────────────
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+    if (-not $isAdmin) {
+        if ($NoElevate) {
+            Write-Error "Administrator rights are required to uninstall packages. Run as Administrator, or remove -NoElevate to allow auto-elevation."
+            exit 1
+        }
+        if ($pipelineMode) {
+            Write-Error "[ELEVATION REQUIRED] Pipeline mode detected. Start PowerShell as Administrator before running this pipeline."
+            exit 1
+        }
+        Write-Warning "[ELEVATION REQUIRED] Uninstalling software via winget requires Administrator rights.`nA UAC prompt will appear now. Use -NoElevate to manage elevation yourself."
+        $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"")
+        foreach ($key in $PSBoundParameters.Keys) {
+            $val = $PSBoundParameters[$key]
+            if ($val -is [switch]) { if ($val) { $argList += "-$key" } }
+            else { $argList += "-$key", "`"$val`"" }
+        }
+        Start-Process pwsh -Verb RunAs -ArgumentList $argList
+        exit
+    }
+
+    # ── Resolve package list ───────────────────────────────────────────────────
+    if ($pipelineMode) {
+        Write-Verbose "Using $($pipelinePackages.Count) package(s) from pipeline."
+        $toRemove = @($pipelinePackages)
+    } else {
+        Write-Verbose "Querying all installed winget packages..."
+        $toRemove = @(Get-WinGetPackage -Source winget)
+    }
+
+    if ($Pattern) {
+        Write-Verbose "Filtering by: '$Pattern'"
+        $safePattern = [regex]::Escape($Pattern)
+        $toRemove = @($toRemove | Where-Object {
+            $_.Name -imatch $safePattern -or $_.Id -imatch $safePattern
+        })
+    }
+
+    if ($toRemove.Count -eq 0) {
+        Write-Warning "No installed packages found matching '$Pattern'."
+        return
+    }
+
+    # ── Show what will be removed ──────────────────────────────────────────────
+    if (-not $Quiet) {
+        Write-Host ""
+        $label = if ($Pattern) { "matching '$Pattern'" } else { "from pipeline" }
+        Write-Host "Packages $label ($($toRemove.Count)):" -ForegroundColor Cyan
+        Write-Host ("=" * 55) -ForegroundColor Cyan
+        $toRemove | Format-Table Name, Id, InstalledVersion -AutoSize
+        Write-Host "!! These packages will be UNINSTALLED !!" -ForegroundColor Red
+        Write-Host ""
+    }
+
+    # ── Remove each package ────────────────────────────────────────────────────
+    $removed = 0
+    $failed  = 0
+
+    foreach ($pkg in $toRemove) {
+        if ($PSCmdlet.ShouldProcess("$($pkg.Id)  ($($pkg.Name))", "Uninstall-WinGetPackage")) {
+            if (-not $Quiet) { Write-Host "[INFO] Removing: $($pkg.Id)  ($($pkg.Name))" }
+            Write-Verbose "Running: Uninstall-WinGetPackage -Id $($pkg.Id) -Mode Silent"
+            try {
+                Uninstall-WinGetPackage -Id $pkg.Id -Mode Silent -ErrorAction Stop
+                $removed++
+            } catch {
+                Write-Warning "Failed to remove '$($pkg.Id)': $_"
+                $failed++
+            }
+        }
+    }
+
+    # ── Summary ────────────────────────────────────────────────────────────────
+    if (-not $Quiet -and -not $WhatIfPreference) {
+        Write-Host ""
+        if ($removed -gt 0) { Write-Host "Removed : $removed package(s)." -ForegroundColor Green }
+        if ($failed  -gt 0) { Write-Host "Failed  : $failed package(s)."  -ForegroundColor Red   }
+    }
+
+    Write-Verbose "Done. Removed: $removed  Failed: $failed"
 }
-
-Write-Verbose "Done. Removed: $removed  Failed: $failed"
