@@ -1,6 +1,8 @@
-# ── scratch / temp ────────────────────────────────────────────────────────────
-tmp.local/*
-!tmp.local/.gitkeep
+# ── *.local directories (scratch/local-only at any depth) ────────────────────
+# Contents are ignored; the directory itself is tracked via .gitkeep or .keep.
+**/*.local/*
+!**/*.local/.gitkeep
+!**/*.local/.keep
 
 # ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
