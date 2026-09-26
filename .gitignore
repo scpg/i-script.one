@@ -1,10 +1,18 @@
-# ── keys and secrets ─────────────────────────
+# ── keys and secrets ─────────────────────────────────────────────────────────
 *.key
 *.pem
 *.crt
 *.cert
+*.p12
+*.pfx
+*.p8
+*.der
+*.secret
+*.token
+secrets/
+credentials/
 
-# ── .env (environment variables), virtual environments ─────────────────────────
+# ── .env (environment variables), virtual environments ───────────────────────
 .env*
 !.env.example
 !.env.template
@@ -13,7 +21,12 @@
 
 .venv*
 
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/settings.local.json
+
 # ── logs ──────────────────────────────────────────────────────────────────────
+# *.log is acceptable here — scripts write to syslog, not project files.
+# If you need to track a specific .log file, override with !path/to/file.log
 *.log
 
 # ── *.local directories (scratch/local-only at any depth) ────────────────────
@@ -39,3 +52,9 @@ $RECYCLE.BIN/
 *.swp
 *.swo
 .idea/
+.vscode/
+
+# ── backup / patch leftovers ──────────────────────────────────────────────────
+*.bak
+*.orig
+*.rej
