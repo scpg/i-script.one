@@ -1,8 +1,12 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+# is1-description: Install 1Password desktop app and CLI on Debian/Ubuntu
 # 1Password Installation Script for Linux (Debian/Ubuntu)
 # This script installs both the 1Password desktop app and CLI (op)
 # Based on official 1Password documentation
+
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
+# shellcheck source=../../lib/is1-lib.sh
+source "$_LIB"
 
 set -e  # Exit on any error
 
@@ -293,9 +297,9 @@ fi
 
 if command -v op &> /dev/null; then
     echo "✓ 1Password CLI (op) installed successfully"
-    local op_version=$(op --version 2>/dev/null || echo "unknown")
-    echo "   Version: $op_version"
-    log_verbose "op command found in PATH with version: $op_version"
+    _op_version=$(op --version 2>/dev/null || echo "unknown")
+    echo "   Version: $_op_version"
+    log_verbose "op command found in PATH with version: $_op_version"
 else
     echo "❌ Error: 1Password CLI (op) installation failed"
     log_verbose "op command not found in PATH"
