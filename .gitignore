@@ -1,8 +1,26 @@
+# ── keys and secrets ─────────────────────────
+*.key
+*.pem
+*.crt
+*.cert
+
+# ── .env (environment variables), virtual environments ─────────────────────────
+.env*
+!.env.example
+!.env.template
+!.env.op
+!.env.1p
+
+.venv*
+
+# ── logs ──────────────────────────────────────────────────────────────────────
+*.log
+
 # ── *.local directories (scratch/local-only at any depth) ────────────────────
 # Contents are ignored; the directory itself is tracked via .gitkeep or .keep.
 **/*.local/*
-!**/*.local/.gitkeep
-!**/*.local/.keep
+!.gitkeep
+!.keep
 
 # ── macOS ─────────────────────────────────────────────────────────────────────
 .DS_Store
@@ -21,6 +39,3 @@ $RECYCLE.BIN/
 *.swp
 *.swo
 .idea/
-
-# ── logs ──────────────────────────────────────────────────────────────────────
-*.log
