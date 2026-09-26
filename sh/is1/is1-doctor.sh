@@ -53,7 +53,7 @@ if command -v shellcheck >/dev/null 2>&1 && shellcheck --version >/dev/null 2>&1
     _pass "shellcheck found${_scver:+: $_scver}"
 else
     _note "shellcheck not found — is1-bash-syntax-check will fall back to bash -n"
-    printf '   Install: apt install shellcheck\n'
+    printf '   Install: sudo apt install shellcheck\n'
 fi
 
 # ── 4. Symlinks for all repo scripts ──────────────────────────────────────────
