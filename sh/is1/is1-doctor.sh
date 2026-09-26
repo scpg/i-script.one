@@ -48,8 +48,9 @@ else
 fi
 
 # ── 3. shellcheck ─────────────────────────────────────────────────────────────
-if command -v shellcheck >/dev/null 2>&1; then
-    _pass "shellcheck found: $(shellcheck --version | head -2 | tail -1)"
+if command -v shellcheck >/dev/null 2>&1 && shellcheck --version >/dev/null 2>&1; then
+    _scver="$(shellcheck --version 2>/dev/null | grep -m1 'version:' | awk '{print $2}')" || true
+    _pass "shellcheck found${_scver:+: $_scver}"
 else
     _note "shellcheck not found — is1-bash-syntax-check will fall back to bash -n"
     printf '   Install: apt install shellcheck\n'
