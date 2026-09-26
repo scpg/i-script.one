@@ -17,7 +17,7 @@ if command -v shellcheck >/dev/null 2>&1; then
     _checker="shellcheck"
 else
     warn "shellcheck not found — falling back to bash -n (weaker checking)"
-    warn "Install shellcheck for SC2-level analysis: apt install shellcheck"
+    warn "Install shellcheck for SC2-level analysis: sudo apt install shellcheck"
     _checker="bash_n"
 fi
 
