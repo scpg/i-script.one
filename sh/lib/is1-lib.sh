@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # is1-lib.sh — shared helpers for all is1 scripts
 # Source with:
-#   LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
+#   LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
 #   source "$LIB"
 #
 # Guards against double-sourcing:

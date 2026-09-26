@@ -4,8 +4,8 @@
 # This script installs both the 1Password desktop app and CLI (op)
 # Based on official 1Password documentation
 
-_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
-# shellcheck source=../../lib/is1-lib.sh
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
+# shellcheck source=../lib/is1-lib.sh
 source "$_LIB"
 
 set -e  # Exit on any error

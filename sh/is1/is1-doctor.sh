@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
-# shellcheck source=../../lib/is1-lib.sh
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
+# shellcheck source=../lib/is1-lib.sh
 source "$_LIB"
 
 _BIN="${HOME}/.local/bin"
@@ -36,6 +36,7 @@ if printf ':%s:' "$PATH" | grep -q ":${_BIN}:"; then
 else
     _fail "$_BIN is NOT in PATH — commands will not be found"
     printf '   Add to ~/.bashrc or ~/.zshrc:\n'
+    # shellcheck disable=SC2016
     printf '       export PATH="%s:$PATH"\n' "$_BIN"
 fi
 

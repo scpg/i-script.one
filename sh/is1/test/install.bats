@@ -87,7 +87,8 @@ teardown() {
 @test "is1-doctor reports missing symlinks after remove" {
     bash /repo/install.sh -q
     is1-remove --force
-    run is1-doctor
+    # Call by repo path since the symlink itself was just removed
+    run bash /repo/sh/is1/is1-doctor.sh
     [ "$status" -eq 1 ]
     [[ "$output" == *"FAIL"* ]]
 }

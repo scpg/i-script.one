@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
-# shellcheck source=../../lib/is1-lib.sh
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
+# shellcheck source=../lib/is1-lib.sh
 source "$_LIB"
 
 _REPO="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../" && pwd)"
@@ -42,7 +42,6 @@ _linked=0
 # ── Discover and link user scripts (is1-* under sh/, excluding sh/is1/ and sh/lib/) ──
 while IFS= read -r -d '' _script; do
     _name="$(basename "$_script" .sh)"
-    run chmod +x "$_script"
     run ln -sfn "$_script" "$_BIN/$_name"
     info "Linked: $_BIN/$_name"
     (( _linked++ )) || true
@@ -55,7 +54,6 @@ done < <(find "$_REPO/sh" -name "is1-*.sh" \
 for _meta in is1 is1-install is1-update is1-remove is1-doctor; do
     _src="$_REPO/sh/is1/${_meta}.sh"
     [ -f "$_src" ] || continue
-    run chmod +x "$_src"
     run ln -sfn "$_src" "$_BIN/$_meta"
     info "Linked: $_BIN/$_meta"
     (( _linked++ )) || true
@@ -71,6 +69,7 @@ else
     [ -f "$HOME/.zshrc" ] && _rc="$HOME/.zshrc"
     warn "$_BIN is not in PATH"
     printf '\n   Add to %s:\n' "$_rc"
+    # shellcheck disable=SC2016
     printf '       export PATH="%s:$PATH"\n' "$_BIN"
     printf '\n   Then reload:  source %s\n\n' "$_rc"
 fi

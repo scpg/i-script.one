@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
-# shellcheck source=../../lib/is1-lib.sh
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
+# shellcheck source=../lib/is1-lib.sh
 source "$_LIB"
 
 _BIN="${HOME}/.local/bin"

@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../lib/is1-lib.sh"
-# shellcheck source=../../lib/is1-lib.sh
+_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/is1-lib.sh"
+# shellcheck source=../lib/is1-lib.sh
 source "$_LIB"
 
 if [[ $# -eq 0 ]]; then
@@ -24,7 +24,9 @@ fi
 _errors=0
 for _f in "$@"; do
     if [ "$_checker" = "shellcheck" ]; then
-        if shellcheck "$_f"; then
+        # cd to the script's directory so relative source= directives resolve correctly
+        _dir="$(cd "$(dirname "$(readlink -f "$_f")")" && pwd)"
+        if (cd "$_dir" && shellcheck -x "$_f"); then
             info "OK   $_f"
         else
             error "FAIL $_f"

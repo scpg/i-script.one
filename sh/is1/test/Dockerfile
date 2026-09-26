@@ -10,7 +10,8 @@ RUN apt-get update -qq && \
 
 # Create a non-root test user with ~/.local/bin in PATH
 RUN useradd -m -s /bin/bash testuser && \
-    mkdir -p /home/testuser/.local/bin
+    mkdir -p /home/testuser/.local/bin && \
+    chown -R testuser:testuser /home/testuser/.local
 
 ENV PATH="/home/testuser/.local/bin:$PATH"
 ENV HOME=/home/testuser
