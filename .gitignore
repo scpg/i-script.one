@@ -51,8 +51,24 @@ $RECYCLE.BIN/
 # ── editors ───────────────────────────────────────────────────────────────────
 *.swp
 *.swo
-.idea/
-.vscode/
+
+# VSCode — ignore user state, track shared config
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# JetBrains — ignore user/machine-specific files, track project config
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
 
 # ── backup / patch leftovers ──────────────────────────────────────────────────
 *.bak
