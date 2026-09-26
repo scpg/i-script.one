@@ -80,11 +80,19 @@ for _name in "${_expected[@]}"; do
     _link="$_BIN/$_name"
     if [ -L "$_link" ]; then
         _target="$(readlink -f "$_link" 2>/dev/null || true)"
-        if [ -x "$_target" ]; then
-            _pass "$_name → $_target"
-        else
-            _fail "$_name → target not executable: $_target"
-        fi
+        case "$_target" in
+            "$_REPO"/*)
+                if [ -x "$_target" ]; then
+                    _pass "$_name → $_target"
+                else
+                    _fail "$_name → target not executable: $_target"
+                fi
+                ;;
+            *)
+                _note "$_name → points to a different installation: $_target"
+                _note "  Run: is1-install --force   to update to this repo"
+                ;;
+        esac
     else
         _fail "$_name — symlink missing in $_BIN (run: is1-install)"
     fi

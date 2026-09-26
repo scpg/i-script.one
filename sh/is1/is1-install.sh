@@ -10,14 +10,27 @@ source "$_LIB"
 _REPO="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../" && pwd)"
 _BIN="${HOME}/.local/bin"
 
+_FORCE=0
+
 _usage() {
-    printf 'Usage: %s [-h] [-n] [-q]\n\n' "$(basename "$0")"
+    printf 'Usage: %s [-h] [-n] [-q] [--force]\n\n' "$(basename "$0")"
     printf 'Install all is1-* scripts as commands in %s.\n\n' "$_BIN"
     printf 'Options:\n'
-    printf '  -h   show this help\n'
-    printf '  -n   dry-run: print what would be done, make no changes\n'
-    printf '  -q   quiet: suppress informational output\n'
+    printf '  -h        show this help\n'
+    printf '  -n        dry-run: print what would be done, make no changes\n'
+    printf '  -q        quiet: suppress informational output\n'
+    printf '  --force   overwrite symlinks that point to a different installation\n'
 }
+
+# Parse args (getopts + manual --force)
+_args=()
+for _arg in "$@"; do
+    case "$_arg" in
+        --force) _FORCE=1 ;;
+        *) _args+=("$_arg") ;;
+    esac
+done
+set -- "${_args[@]+"${_args[@]}"}"
 
 while getopts "hnq" _opt; do
     case "$_opt" in
@@ -38,13 +51,40 @@ if [ ! -d "$_BIN" ]; then
 fi
 
 _linked=0
+_skipped=0
+
+# _link_script SRC NAME — create symlink, respecting --force for foreign links
+_link_script() {
+    local _src="$1" _name="$2"
+    local _link="$_BIN/$_name"
+    if [ -L "$_link" ]; then
+        local _existing
+        _existing="$(readlink -f "$_link" 2>/dev/null || true)"
+        case "$_existing" in
+            "$_REPO"/*)
+                # Already points here — update in place.
+                ;;
+            *)
+                if [ "$_FORCE" = "1" ]; then
+                    warn "Replacing: $_name (was: $_existing)"
+                else
+                    warn "Skipping: $_name already installed from a different location"
+                    warn "  was: $_existing"
+                    warn "  Use --force to override"
+                    (( _skipped++ )) || true
+                    return
+                fi
+                ;;
+        esac
+    fi
+    run ln -sfn "$_src" "$_link"
+    info "Linked: $_link"
+    (( _linked++ )) || true
+}
 
 # ── Discover and link user scripts (is1-* under sh/, excluding sh/is1/ and sh/lib/) ──
 while IFS= read -r -d '' _script; do
-    _name="$(basename "$_script" .sh)"
-    run ln -sfn "$_script" "$_BIN/$_name"
-    info "Linked: $_BIN/$_name"
-    (( _linked++ )) || true
+    _link_script "$_script" "$(basename "$_script" .sh)"
 done < <(find "$_REPO/sh" -name "is1-*.sh" \
     -not -path "$_REPO/sh/is1/*" \
     -not -path "$_REPO/sh/lib/*" \
@@ -54,12 +94,14 @@ done < <(find "$_REPO/sh" -name "is1-*.sh" \
 for _meta in is1 is1-install is1-update is1-remove is1-doctor; do
     _src="$_REPO/sh/is1/${_meta}.sh"
     [ -f "$_src" ] || continue
-    run ln -sfn "$_src" "$_BIN/$_meta"
-    info "Linked: $_BIN/$_meta"
-    (( _linked++ )) || true
+    _link_script "$_src" "$_meta"
 done
 
-info "Done: $_linked commands linked"
+if [ "$_skipped" -gt 0 ]; then
+    info "Done: $_linked linked, $_skipped skipped (run with --force to override)"
+else
+    info "Done: $_linked commands linked"
+fi
 
 # ── PATH check ────────────────────────────────────────────────────────────────
 if printf ':%s:' "$PATH" | grep -q ":${_BIN}:"; then
