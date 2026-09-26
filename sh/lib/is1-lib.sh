@@ -54,6 +54,15 @@ require_dir() { [ -d "$1" ] || die "Required directory not found: $1"; }
 #   done
 #   shift $((OPTIND - 1))
 
+# ── Tool availability ────────────────────────────────────────────────────────
+# tool_available CMD — returns 0 if CMD can actually be executed.
+# Checks both: (1) CMD is in PATH, and (2) CMD --version exits successfully.
+# This correctly returns false for shims/wrappers that are in PATH but fail
+# because no version is configured, or for binaries with bad permissions.
+tool_available() {
+    command -v "$1" >/dev/null 2>&1 && "$1" --version >/dev/null 2>&1
+}
+
 # ── Command execution ─────────────────────────────────────────────────────────
 # run CMD [ARGS…] — execute or print (dry-run mode)
 run() {

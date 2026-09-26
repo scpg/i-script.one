@@ -13,11 +13,15 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if command -v shellcheck >/dev/null 2>&1; then
+if tool_available shellcheck; then
     _checker="shellcheck"
+elif command -v shellcheck >/dev/null 2>&1; then
+    warn "shellcheck is in PATH but cannot run — check permissions or version manager configuration"
+    warn "Falling back to bash -n (weaker checking)"
+    _checker="bash_n"
 else
-    warn "shellcheck not found — falling back to bash -n (weaker checking)"
-    warn "Install shellcheck for SC2-level analysis: sudo apt install shellcheck"
+    warn "shellcheck not installed — falling back to bash -n (weaker checking)"
+    warn "Install: sudo apt install shellcheck  (or brew install shellcheck)"
     _checker="bash_n"
 fi
 

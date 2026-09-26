@@ -41,19 +41,24 @@ else
 fi
 
 # ── 2. git ────────────────────────────────────────────────────────────────────
-if command -v git >/dev/null 2>&1; then
-    _pass "git found: $(git --version)"
+if tool_available git; then
+    _pass "git found: $(git --version 2>/dev/null)"
+elif command -v git >/dev/null 2>&1; then
+    _fail "git is in PATH ($(command -v git)) but cannot run — check permissions or version manager configuration"
 else
     _fail "git not found — required for is1-update"
 fi
 
 # ── 3. shellcheck ─────────────────────────────────────────────────────────────
-if command -v shellcheck >/dev/null 2>&1 && shellcheck --version >/dev/null 2>&1; then
+if tool_available shellcheck; then
     _scver="$(shellcheck --version 2>/dev/null | grep -m1 'version:' | awk '{print $2}')" || true
     _pass "shellcheck found${_scver:+: $_scver}"
+elif command -v shellcheck >/dev/null 2>&1; then
+    _note "shellcheck is in PATH ($(command -v shellcheck)) but cannot run — check permissions or version manager configuration"
+    _note "is1-bash-syntax-check will fall back to bash -n"
 else
-    _note "shellcheck not found — is1-bash-syntax-check will fall back to bash -n"
-    printf '   Install: sudo apt install shellcheck\n'
+    _note "shellcheck not installed — is1-bash-syntax-check will fall back to bash -n"
+    printf '   Install: sudo apt install shellcheck  (or brew install shellcheck)\n'
 fi
 
 # ── 4. Symlinks for all repo scripts ──────────────────────────────────────────
