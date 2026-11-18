@@ -1,0 +1,65 @@
+# ============================================================
+#  Line-ending policy for i-script.one
+#
+#  This repo spans two tracks:
+#    - Windows / PowerShell  (ps/  : *.ps1, *.psm1, *.psd1, *.cmd)
+#    - Linux / bash + Docker (sh/  : *.sh, *.bats, Dockerfile)
+#
+#  `text=auto`  -> normalize to LF *inside the repository*
+#  `eol=<x>`    -> what gets written to the *working tree* on checkout
+#
+#  Net effect: the repo stays portable (LF everywhere), while each
+#  platform gets the endings its tooling expects on disk.
+# ============================================================
+
+# ---- Default: let Git detect text and normalize it to LF in-repo ----
+* text=auto
+
+# ---- Linux / shell: MUST be LF ----
+# CRLF breaks the shebang line (`#!/usr/bin/env bash\r` is not a valid
+# interpreter path) and produces "bad interpreter" / "\r: command not found".
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.bats      text eol=lf
+Dockerfile  text eol=lf
+*.dockerfile text eol=lf
+.editorconfig text eol=lf
+
+# ---- Windows scripts: CRLF in the working tree ----
+*.ps1       text eol=crlf
+*.psm1      text eol=crlf
+*.psd1      text eol=crlf
+*.ps1xml    text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+
+# ---- Docs & config: LF (portable, and what most tooling emits) ----
+*.md        text eol=lf
+*.txt       text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.toml      text eol=lf
+*.xml       text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+.gitkeep        text eol=lf
+LICENSE         text eol=lf
+
+# ---- Binary: never normalize, never diff as text ----
+# Office files are ZIP containers; EOL "fixing" silently corrupts them.
+*.xlsx      binary
+*.xlsm      binary
+*.xls       binary
+*.docx      binary
+*.pdf       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.zip       binary
+*.gz        binary
+*.7z        binary
+*.exe       binary
+*.dll       binary
